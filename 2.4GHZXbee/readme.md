@@ -7,3 +7,4 @@ Requirments: Python3
              Xbee python library
              pyserial
              
+IMPORTANT: main.py is used specificaly to upload directly on the xbee chip, it will start a script to transmit data
