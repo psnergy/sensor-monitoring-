@@ -90,12 +90,14 @@ def printData(values):
         print(output)
     except IndexError:
         pass
+    return output
         
 def main():
     device = connect()
     initData(device)
-    zigbee_device = XBeeDevice('', 115200)
-    REMOTE_NODE_ID = "Main"
+    zigbee_device = XBeeDevice('/dev/ttyUSB0', 230400)
+    REMOTE_NODE_ID = "Sender"
+    zigbee_device.open()
     xbee_network = zigbee_device.get_network()
     remote_device = xbee_network.discover_device(REMOTE_NODE_ID)
     
@@ -105,8 +107,8 @@ def main():
             device = handleTimeout(device)
         else:
             # do something with data (printing for now)
-            # printData(values)
-            zigbee_device.send_data(remote_device, values[2]) 
+            output = printData(values)
+            zigbee_device.send_data(remote_device, output)
 
 # Don't stop even if device gets disconnected            
 while True:
