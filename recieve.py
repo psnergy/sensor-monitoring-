@@ -41,14 +41,11 @@ def main():
     client.switch_database('service')
     
     while True:
-        try:
-            line = device.readline()
-            values = line.decode('utf-8').rsplit()
-            pressure = (float(values[0]))
-            json_body=get_points(pressure)
-            client.write_points(json_body)
-        except:
-            continue
+        line = device.readline()
+        values = line.decode('utf-8').rsplit()
+        pressure = (float(values[0]))
+        json_body=get_points(pressure)
+        client.write_points(json_body)
         
 while True:
     try:
