@@ -1,25 +1,26 @@
 from influxdb import InfluxDBClient
 import serial
-client = InfluxDBClient(host='localhost', port=8086)
-#TODO: change to the database that you would like to use
-client.switch_database('service')
+import time
 
-# TODO: Replace with the serial port where your local module is connected to. 
-PORT = "/dev/ttyUSB0"
-# TODO: Replace with the baud rate of your local module.
-BAUD_RATE = 115200
+BAUD = 115200
 
-pressure = 0
+def connect():
+    connected = False
+    curr_dev = 0 # ttyACM* dev number
+    dev_addr = '/dev/ttyUSB'
+    curr_dev_addr = ""
+    while not connected:
+        curr_dev_addr = dev_addr + str(curr_dev)
+        try:
+            device = serial.Serial(curr_dev_addr, BAUD, timeout=2)
+            connected = True
+        except (serial.SerialException, FileNotFoundError) as e:
+            curr_dev += 1
+            curr_dev %= 10
+        time.sleep(2)
+    return device
 
-def main():
-    global pressure
-    device = serial.Serial("/dev/ttyUSB0", 115200, timeout=2)
-    
-    line = device.readline()
-    values = line.decode('utf-8').rsplit()
-    pressure = (float(values[0]))
-def get_points():
-   # print(jason)
+def get_points(pressure):
     json_body = [
         {
             "measurement":"manometer",
@@ -33,10 +34,24 @@ def get_points():
             }
         ]
     return(json_body)
+
+def main():    
+    device = connect()
+    client = InfluxDBClient(host='localhost', port=8086)
+    client.switch_database('service')
+    
+    while True:
+        try:
+            line = device.readline()
+            values = line.decode('utf-8').rsplit()
+            pressure = (float(values[0]))
+            json_body=get_points(pressure)
+            client.write_points(json_body)
+        except:
+            continue
+        
 while True:
     try:
         main()
-        data = get_points()
-        client.write_points(data)
     except:
         continue
