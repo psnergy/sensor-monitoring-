@@ -1,6 +1,7 @@
 from influxdb import InfluxDBClient
 import serial
 import time
+import sys
 
 BAUD = 115200
 
@@ -14,7 +15,7 @@ def connect():
         try:
             device = serial.Serial(curr_dev_addr, BAUD, timeout=2)
             connected = True
-        except (serial.SerialException, FileNotFoundError) as e:
+        except (serial.SerialException, FileNotFoundError, OSError) as e:
             curr_dev += 1
             curr_dev %= 10
         time.sleep(2)
@@ -43,12 +44,16 @@ def main():
     while True:
         line = device.readline()
         values = line.decode('utf-8').rsplit()
-        pressure = (float(values[0]))
-        json_body=get_points(pressure)
-        client.write_points(json_body)
+        print(values)
+        if len(values) > 0:
+            pressure = (float(values[0]))
+            json_body=get_points(pressure)
+            client.write_points(json_body)        
         
 while True:
     try:
         main()
+    except KeyboardInterrupt:
+        sys.exit()
     except:
         continue
