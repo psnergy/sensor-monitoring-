@@ -9,28 +9,26 @@ PORT = "/dev/ttyUSB0"
 # TODO: Replace with the baud rate of your local module.
 BAUD_RATE = 115200
 
-jason = 0
+pressure = 0
 
 def main():
-    global jason
+    global pressure
     device = serial.Serial("/dev/ttyUSB0", 115200, timeout=2)
     
     line = device.readline()
     values = line.decode('utf-8').rsplit()
-    jason = (float(values[0]))
+    pressure = (float(values[0]))
 def get_points():
    # print(jason)
     json_body = [
         {
-            "measurement":"o2",
+            "measurement":"manometer",
             "tags": {
-                "furnace": "service-unit-1",
-                "side": "drive",
-                "tube": "2",
-                "zone": "2"
+                "box": "xbee",
+                "channel": "pressure"
                 },
                 "fields":{
-                    "presj": jason
+                    "pressure": pressure
                     }
             }
         ]
